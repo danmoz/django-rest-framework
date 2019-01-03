@@ -86,10 +86,13 @@ class ErrorDetail(six.text_type):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return unicode_to_repr('ErrorDetail(string=%r, code=%r)' % (
-            six.text_type(self),
-            self.code,
-        ))
+        #return unicode_to_repr('ErrorDetail(string=%r, code=%r)' % (
+        #    six.text_type(self),
+        #    self.code,
+        #))
+        
+        #https://github.com/encode/django-rest-framework/issues/6123
+        return unicode_to_repr(ErrorDetail(string=six.text_type(self), code=self.code))
 
     def __hash__(self):
         return hash(str(self))
