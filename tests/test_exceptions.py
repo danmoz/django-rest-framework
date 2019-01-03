@@ -6,7 +6,7 @@ from django.utils import six, translation
 from django.utils.translation import ugettext_lazy as _
 
 from rest_framework.exceptions import (
-    APIException, ErrorDetail, Throttled, _get_error_details, bad_request,
+    APIException, ValidationError, ErrorDetail, Throttled, _get_error_details, bad_request,
     server_error
 )
 
@@ -108,3 +108,16 @@ def test_bad_request():
     response = bad_request(request, exception)
     assert response.status_code == 400
     assert response["content-type"] == 'application/json'
+
+
+class ValidationErrorTests(TestCase):
+
+    # def test_validationerror_str_from_dict(self):
+    #     test_dict =
+    #     assert str(ValidationError('foo')) == "['foo']"
+
+    def test_validationerror_str_from_list(self):
+        assert str(ValidationError('foo')) == "['foo']"
+
+    def test_validationerror_str_from_str(self):
+        assert str(ValidationError(['foo'])) == "['foo']"

@@ -45,6 +45,25 @@ def _get_error_details(data, default_code=None):
     return ErrorDetail(text, code)
 
 
+def _get_error_details_new(data, default_code=None):
+    """
+    Descend into a nested data structure, forcing any
+    lazy translation strings or strings into `ErrorDetail`.
+    """
+    if isinstance(data, list):
+        ret = [
+            _get_error_details_new(item, default_code) for item in data
+        ]
+        return ret
+    elif isinstance(data, dict):
+        ret = {
+            key: _get_error_details_new(value, default_code)
+            for key, value in data.items()
+        }
+        return ret
+    return force_text(str(data))
+
+
 def _get_codes(detail):
     if isinstance(detail, list):
         return [_get_codes(item) for item in detail]
@@ -86,13 +105,10 @@ class ErrorDetail(six.text_type):
         return not self.__eq__(other)
 
     def __repr__(self):
-        #return unicode_to_repr('ErrorDetail(string=%r, code=%r)' % (
-        #    six.text_type(self),
-        #    self.code,
-        #))
-        
-        #https://github.com/encode/django-rest-framework/issues/6123
-        return unicode_to_repr(ErrorDetail(string=six.text_type(self), code=self.code))
+        return unicode_to_repr('ErrorDetail(string=%r, code=%r)' % (
+           six.text_type(self),
+           self.code,
+        ))
 
     def __hash__(self):
         return hash(str(self))
@@ -159,6 +175,9 @@ class ValidationError(APIException):
             detail = [detail]
 
         self.detail = _get_error_details(detail, code)
+
+    def __str__(self):
+        return six.text_type(_get_error_details_new(self.detail))
 
 
 class ParseError(APIException):
